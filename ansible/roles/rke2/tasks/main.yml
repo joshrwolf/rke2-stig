@@ -6,9 +6,19 @@
     dest: /tmp/rke2-install.sh
     mode: '0755'
 
-- name: Run RKE2 installer
+- name: Run RKE2 installer as server
   shell: /tmp/rke2-install.sh
   environment:
     INSTALL_RKE2_VERSION: "{{ rke2_version }}"
     INSTALL_RKE2_METHOD: "{{ rke2_method }}"
     INSTALL_RKE2_CHANNEL: "{{ rke2_channel }}"
+
+# Run the  yum installer twice to mimic how tar works since we want a single image for server _and_ agent
+# NOTE: The logic for creating a server or agent is delegated to the implementor
+- name: Run RKE2 installer as agent
+  shell: /tmp/rke2-install.sh
+  environment:
+    INSTALL_RKE2_VERSION: "{{ rke2_version }}"
+    INSTALL_RKE2_METHOD: "{{ rke2_method }}"
+    INSTALL_RKE2_CHANNEL: "{{ rke2_channel }}"
+    INSTALL_RKE2_TYPE: agent

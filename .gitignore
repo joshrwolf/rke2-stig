@@ -9,3 +9,4 @@ crash.log
 
 # IDEs
 .idea/
+.DS_Store

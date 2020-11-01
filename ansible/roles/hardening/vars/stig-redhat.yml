@@ -169,19 +169,19 @@ package_sendmail_removed: true
 package_sudo_installed: true
 package_tmux_installed: true
 package_tuned_removed: true
-package_usbguard_installed: false
-reboot_required: false
+package_usbguard_installed: true
+reboot_required: true
 require_singleuser_auth: true
 restrict_strategy: true
 securetty_root_login_console_only: true
 selinux_policytype: true
 selinux_state: true
 service_auditd_enabled: true
-service_fapolicyd_enabled: false           # TODO: configure fapolicyd appropriately for rke2
-service_firewalld_enabled: false          # rke2 requires firewalld disabled
+service_fapolicyd_enabled: false            # TODO: configure fapolicyd appropriately for rke2
+service_firewalld_enabled: false            # rke2 requires firewalld disabled
 service_rngd_enabled: true
-service_usbguard_enabled: false
-sshd_disable_empty_passwords: false
+service_usbguard_enabled: true
+sshd_disable_empty_passwords: false         # Allow empty passwords (private key)
 sshd_disable_gssapi_auth: true
 sshd_disable_kerb_auth: true
 sshd_disable_root_login: true
@@ -208,13 +208,13 @@ sysctl_net_ipv4_conf_all_accept_source_route: true
 sysctl_net_ipv4_conf_all_log_martians: true
 sysctl_net_ipv4_conf_all_rp_filter: true
 sysctl_net_ipv4_conf_all_secure_redirects: true
-sysctl_net_ipv4_conf_all_send_redirects: true
+sysctl_net_ipv4_conf_all_send_redirects: false                  # Disable for "routers"
 sysctl_net_ipv4_conf_default_accept_redirects: false
 sysctl_net_ipv4_conf_default_accept_source_route: true
 sysctl_net_ipv4_conf_default_log_martians: true
-sysctl_net_ipv4_conf_default_rp_filter: true
+sysctl_net_ipv4_conf_default_rp_filter: false                   # Disable for "routers"
 sysctl_net_ipv4_conf_default_secure_redirects: true
-sysctl_net_ipv4_conf_default_send_redirects: true
+sysctl_net_ipv4_conf_default_send_redirects: false              # Disable for "routers"
 sysctl_net_ipv4_icmp_echo_ignore_broadcasts: true
 sysctl_net_ipv4_icmp_ignore_bogus_error_responses: true
 sysctl_net_ipv4_ip_forward: false
