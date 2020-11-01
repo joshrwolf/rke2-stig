@@ -1,0 +1,115 @@
+{
+
+  "variables": {
+    "aws_region": "",
+
+    "rke2_version": "",
+    "rke2_build_date": "",
+
+    "ami_name": "rhel8",
+    "ami_description": "An RKE2 base image based on RHEL 8 Build Date: {{ isotime }}",
+
+    "source_ami_name": "RHEL-8.3*",
+    "source_ami_owner": "309956199498",
+    "source_ami_owner_govcloud": "219670896067",
+    "source_ami_ssh_user": "ec2-user",
+
+    "http_proxy": "",
+    "https_proxy": "",
+    "no_proxy": "",
+
+    "hardening": "stig",
+    "encrypted": "false",
+    "kms_key_id": "",
+
+    "vpc_id": "",
+    "subnet_id": ""
+  },
+
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "{{user `aws_region`}}",
+      "ami_regions": "us-gov-west-1",
+      "source_ami_filter": {
+        "filters": {
+          "name": "{{user `source_ami_name`}}",
+          "root-device-type": "ebs",
+          "state": "available",
+          "virtualization-type": "hvm",
+          "architecture": "x86_64"
+        },
+        "owners": [ "{{user `source_ami_owner`}}", "{{user `source_ami_owner_govcloud`}}" ],
+        "most_recent": true
+      },
+      "instance_type": "m5.large",
+      "ssh_username": "{{user `source_ami_ssh_user`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "encrypt_boot": "{{user `encrypted`}}",
+      "kms_key_id": "{{user `kms_key_id`}}",
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_size": 25,
+          "volume_type": "gp2",
+          "encrypted": "{{user `encrypted`}}",
+          "kms_key_id": "{{user `kms_key_id`}}",
+          "delete_on_termination": true
+        }
+      ],
+      "tags": {
+        "Name": "rke2-{{user `ami_name`}}-{{user `hardening`}}-{{ timestamp }}",
+        "BuildDate": "{{ isotime }}",
+        "RKE2-Version": "{{user `rke2_version`}}",
+        "RKE2-BuildDate": "{{user `rke2_build_date`}}",
+        "Hardening": "{{user `hardening`}}"
+      },
+      "ami_name": "rke2-{{user `ami_name`}}-{{user `hardening`}}-{{ timestamp }}",
+      "ami_description": "{{user `ami_description` }}",
+      "ami_virtualization_type": "hvm",
+      "run_tags": {
+        "Name": "packer-builder-rke2-{{user `ami_name`}}-{{user `hardening`}}-ami"
+      }
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 5; done",
+      "environment_vars": [
+        "http_proxy={{user `http_proxy` }}",
+        "https_proxy={{user `https_proxy` }}",
+        "no_proxy={{user `no_proxy` }}",
+        "HTTP_PROXY={{user `http_proxy` }}",
+        "HTTPS_PROXY={{user `https_proxy` }}",
+        "NO_PROXY={{user `no_proxy` }}"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": "sudo lsblk",
+      "environment_vars": [
+        "http_proxy={{user `http_proxy` }}",
+        "https_proxy={{user `https_proxy` }}",
+        "no_proxy={{user `no_proxy` }}",
+        "HTTP_PROXY={{user `http_proxy` }}",
+        "HTTPS_PROXY={{user `https_proxy` }}",
+        "NO_PROXY={{user `no_proxy` }}"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "../ansible/rke2.yml",
+      "user": "{{user `source_ami_ssh_user`}}",
+      "ansible_env_vars": [
+        "ANSIBLE_REMOTE_TEMP='/tmp/.ansible/'"
+      ],
+      "extra_arguments": [
+        "-vv",
+        "--extra-vars",
+        "ansible_python_interpreter=/usr/libexec/platform-python aws_region={{user `aws_region`}} rke2_version={{user `k8s_version`}} k8s_build_date={{user `k8s_build_date`}} cni_version={{user `cni_version`}} cni_plugin_version={{user `cni_plugin_version`}} hardening={{user `hardening`}} http_proxy={{user `http_proxy` }} https_proxy={{user `https_proxy` }} no_proxy={{user `no_proxy` }}"
+      ]
+    }
+  ]
+}

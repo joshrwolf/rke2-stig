@@ -1,0 +1,82 @@
+---
+
+- name: Ensure overlay module is present
+  modprobe:
+    name: overlay
+    state: present
+
+- name: Ensure br_netfilter module is present
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Persist required kernel modules
+  copy:
+    content: |
+      overlay
+      br_netfilter
+    dest: /etc/modules-load.d/kubernetes.conf
+    mode: 0644
+
+- name: Ensure net.ipv4.ip_forward sysctl is present
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    sysctl_set: yes
+    reload: yes
+
+- name: Ensure net.bridge.bridge-nf-call-iptables sysctl is present
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: "1"
+    state: present
+    sysctl_set: yes
+    reload: yes
+
+- name: Ensure net.ipv6.conf.all.forwarding sysctl is present
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    state: present
+    sysctl_set: yes
+    reload: yes
+
+- name: Ensure IPv6 is enable
+  sysctl:
+    name: net.ipv6.conf.all.disable_ipv6
+    value: "0"
+    state: present
+    sysctl_set: yes
+    reload: yes
+
+- name: Ensure net.bridge.bridge-nf-call-ip6tables sysctl is present
+  sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: "1"
+    state: present
+    sysctl_set: yes
+    reload: yes
+
+- name: Disable swap memory
+  shell: |
+    swapoff -a
+  when: ansible_memory_mb.swap.total != 0
+
+- name: Edit fstab file to disable swap
+  shell: sed -ri '/\sswap\s/s/^#?/#/' /etc/fstab
+  when: ansible_memory_mb.swap.total != 0
+
+- name: Ensure auditd is running and comes on at reboot
+  service:
+    name: auditd
+    state: started
+    enabled: yes
+
+#- name: configure auditd rules for containerd
+#  copy:
+#    src: etc/audit/rules.d/containerd.rules
+#    dest: /etc/audit/rules.d/containerd.rules
+#    owner: root
+#    group: root
+#    mode: 0644

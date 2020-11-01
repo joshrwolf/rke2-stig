@@ -1,0 +1,19 @@
+---
+
+- name: ensure the awscli dependencies are installed
+  yum:
+    state: latest
+    name:
+      - curl
+      - unzip
+
+- name: ensure awscli is installed
+  block:
+    - get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+    - unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+    - command: /tmp/aws/install -i /usr/local -b /usr/bin

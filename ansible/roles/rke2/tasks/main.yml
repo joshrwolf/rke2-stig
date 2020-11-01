@@ -1,0 +1,14 @@
+---
+
+- name: Get RKE2 installer
+  get_url:
+    url: https://get.rke2.io
+    dest: /tmp/rke2-install.sh
+    mode: '0755'
+
+- name: Run RKE2 installer
+  shell: /tmp/rke2-install.sh
+  environment:
+    INSTALL_RKE2_VERSION: "{{ rke2_version }}"
+    INSTALL_RKE2_METHOD: "{{ rke2_method }}"
+    INSTALL_RKE2_CHANNEL: "{{ rke2_channel }}"

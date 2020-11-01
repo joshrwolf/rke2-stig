@@ -1,0 +1,2 @@
+rke2_method: yum
+rke2_channel: latest
